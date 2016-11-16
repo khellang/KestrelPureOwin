@@ -1,30 +1,38 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.Extensions.ObjectPool;
 
 namespace KestrelPureOwin
 {
     public class OwinApplication : IHttpApplication<Dictionary<string, object>>
     {
+        private static readonly ObjectPoolProvider PoolProvider = new DefaultObjectPoolProvider();
+
         public OwinApplication(AppFunc application)
         {
             Application = application;
+            EnvironmentPool = PoolProvider.Create<Dictionary<string, object>>();
         }
 
         private AppFunc Application { get; }
 
+        private ObjectPool<Dictionary<string, object>> EnvironmentPool { get; }
+
         public Dictionary<string, object> CreateContext(IFeatureCollection features)
         {
-            var environment = new Dictionary<string, object>(StringComparer.Ordinal);
+            var environment = EnvironmentPool.Get();
 
             var request = features.Get<IHttpRequestFeature>();
             var response = features.Get<IHttpResponseFeature>();
             var lifetime = features.Get<IHttpRequestLifetimeFeature>();
             var identifier = features.Get<IHttpRequestIdentifierFeature>();
             var authentication = features.Get<IHttpAuthenticationFeature>();
+
+            environment.Clear();
 
             environment["owin.RequestBody"] = request.Body;
             environment["owin.RequestHeaders"] = new OwinHeaderDictionary(request.Headers);
@@ -56,7 +64,7 @@ namespace KestrelPureOwin
 
         public void DisposeContext(Dictionary<string, object> environment, Exception exception)
         {
-            // TODO: Anything to do here?
+            EnvironmentPool.Return(environment);
         }
     }
 }
