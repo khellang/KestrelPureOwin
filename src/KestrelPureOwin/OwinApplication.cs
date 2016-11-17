@@ -12,8 +12,6 @@ namespace KestrelPureOwin
 {
     public class OwinApplication : IHttpApplication<Dictionary<string, object>>
     {
-        private static readonly string FeatureCollectionKey = typeof(IFeatureCollection).FullName;
-
         private static readonly ObjectPoolProvider PoolProvider = new DefaultObjectPoolProvider();
 
         public OwinApplication(AppFunc application)
@@ -64,8 +62,7 @@ namespace KestrelPureOwin
             environment.Set(Server.LocalIpAddress, connection?.LocalIpAddress.ToString());
             environment.Set(Server.LocalPort, connection?.LocalPort.ToString());
             environment.Set(Server.User, authentication?.User);
-
-            environment.Set(FeatureCollectionKey, features);
+            environment.Set(Server.Features, features);
 
             return environment;
         }
@@ -74,7 +71,7 @@ namespace KestrelPureOwin
         {
             await Application.Invoke(environment);
 
-            var features = environment.Get<IFeatureCollection>(FeatureCollectionKey);
+            var features = environment.Get<IFeatureCollection>(Server.Features);
 
             var response = features.Get<IHttpResponseFeature>();
 

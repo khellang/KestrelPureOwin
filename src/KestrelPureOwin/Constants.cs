@@ -38,6 +38,7 @@
             public const string LocalIpAddress = "server.LocalIpAddress";
             public const string LocalPort = "server.LocalPort";
             public const string User = "server.User";
+            public const string Features = "server.Features";
         }
     }
 }
