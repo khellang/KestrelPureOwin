@@ -23,7 +23,7 @@ namespace KestrelPureOwin
 
         private static void Configure(BuildFunc builder)
         {
-            builder.UseLogging();
+            builder.UseLogging().UseHelloWorld();
         }
     }
 }
