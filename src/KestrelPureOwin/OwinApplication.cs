@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.ObjectPool;
+using static KestrelPureOwin.Constants;
 
 namespace KestrelPureOwin
 {
-    public class OwinApplication : IHttpApplication<Dictionary<string, object>>
+    public class OwinApplication : IHttpApplication<OwinApplication.Context>
     {
         private static readonly ObjectPoolProvider PoolProvider = new DefaultObjectPoolProvider();
 
@@ -22,9 +24,11 @@ namespace KestrelPureOwin
 
         private ObjectPool<Dictionary<string, object>> EnvironmentPool { get; }
 
-        public Dictionary<string, object> CreateContext(IFeatureCollection features)
+        public Context CreateContext(IFeatureCollection features)
         {
             var environment = EnvironmentPool.Get();
+
+            var context = new Context(features, environment);
 
             var request = features.Get<IHttpRequestFeature>();
             var response = features.Get<IHttpResponseFeature>();
@@ -33,45 +37,86 @@ namespace KestrelPureOwin
             var identifier = features.Get<IHttpRequestIdentifierFeature>();
             var authentication = features.Get<IHttpAuthenticationFeature>();
 
-            environment.Clear();
+            context.Clear();
 
-            environment["owin.RequestBody"] = request.Body;
-            environment["owin.RequestHeaders"] = new OwinHeaderDictionary(request.Headers);
-            environment["owin.RequestMethod"] = request.Method;
-            environment["owin.RequestPath"] = request.Path;
-            environment["owin.RequestPathBase"] = request.PathBase;
-            environment["owin.RequestProtocol"] = request.Protocol;
-            environment["owin.RequestQueryString"] = request.QueryString.TrimStart('?');
-            environment["owin.RequestScheme"] = request.Scheme;
-            environment["owin.RequestUser"] = authentication?.User;
-            environment["owin.RequestId"] = identifier?.TraceIdentifier;
+            context.Set(Owin.Request.Body, request.Body);
+            context.Set(Owin.Request.Headers, new OwinHeaderDictionary(request.Headers));
+            context.Set(Owin.Request.Method, request.Method);
+            context.Set(Owin.Request.Path, request.Path);
+            context.Set(Owin.Request.PathBase, request.PathBase);
+            context.Set(Owin.Request.Protocol, request.Protocol);
+            context.Set(Owin.Request.QueryString, request.QueryString.TrimStart('?'));
+            context.Set(Owin.Request.Scheme, request.Scheme);
+            context.Set(Owin.Request.User, authentication?.User);
+            context.Set(Owin.Request.Id, identifier?.TraceIdentifier);
 
-            environment["owin.ResponseBody"] = response.Body;
-            environment["owin.ResponseHeaders"] = new OwinHeaderDictionary(response.Headers);
-            environment["owin.ResponseStatusCode"] = response.StatusCode;
-            environment["owin.ResponseReasonPhrase"] = response.ReasonPhrase;
-            environment["owin.ResponseProtocol"] = request.Protocol;
+            context.Set(Owin.Response.Body, response.Body);
+            context.Set(Owin.Response.Headers, new OwinHeaderDictionary(response.Headers));
+            context.Set(Owin.Response.StatusCode, response.StatusCode);
+            context.Set(Owin.Response.ReasonPhrase, response.ReasonPhrase);
+            context.Set(Owin.Response.Protocol, request.Protocol);
 
-            environment["owin.CallCancelled"] = lifetime.RequestAborted;
-            environment["owin.Version"] = "1.1";
+            context.Set(Owin.CallCancelled, lifetime.RequestAborted);
+            context.Set(Owin.OwinVersion, "1.1");
 
-            environment["server.RemoteIpAddress"] = connection?.RemoteIpAddress.ToString();
-            environment["server.RemotePort"] = connection?.RemotePort.ToString();
-            environment["server.LocalIpAddress"] = connection?.LocalIpAddress.ToString();
-            environment["server.LocalPort"] = connection?.LocalPort.ToString();
-            environment["server.User"] = authentication?.User;
+            context.Set(Server.RemoteIpAddress, connection?.RemoteIpAddress.ToString());
+            context.Set(Server.RemotePort, connection?.RemotePort.ToString());
+            context.Set(Server.LocalIpAddress, connection?.LocalIpAddress.ToString());
+            context.Set(Server.LocalPort, connection?.LocalPort.ToString());
+            context.Set(Server.User, authentication?.User);
 
-            return environment;
+            return new Context(features, environment);
         }
 
-        public Task ProcessRequestAsync(Dictionary<string, object> environment)
+        public async Task ProcessRequestAsync(Context context)
         {
-            return Application.Invoke(environment);
+            await Application.Invoke(context.Environment);
+
+            var response = context.Features.Get<IHttpResponseFeature>();
+
+            response.Body = context.Get<Stream>(Owin.Response.Body);
+            // TODO: Headers...
+            response.StatusCode = context.Get<int>(Owin.Response.StatusCode);
+            response.ReasonPhrase = context.Get<string>(Owin.Response.ReasonPhrase);
         }
 
-        public void DisposeContext(Dictionary<string, object> environment, Exception exception)
+        public void DisposeContext(Context context, Exception exception)
         {
-            EnvironmentPool.Return(environment);
+            EnvironmentPool.Return(context.Environment);
+        }
+
+        public class Context
+        {
+            public Context(IFeatureCollection features, Dictionary<string, object> environment)
+            {
+                Features = features;
+                Environment = environment;
+            }
+
+            public IFeatureCollection Features { get; }
+
+            public Dictionary<string, object> Environment { get; }
+
+            public T Get<T>(string key)
+            {
+                object value;
+                if (Environment.TryGetValue(key, out value) && value is T)
+                {
+                    return (T) value;
+                }
+
+                return default(T);
+            }
+
+            public void Set<T>(string key, T value)
+            {
+                Environment[key] = value;
+            }
+
+            public void Clear()
+            {
+                Environment.Clear();
+            }
         }
     }
 }
