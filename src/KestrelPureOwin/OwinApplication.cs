@@ -28,6 +28,7 @@ namespace KestrelPureOwin
 
             var request = features.Get<IHttpRequestFeature>();
             var response = features.Get<IHttpResponseFeature>();
+            var connection = features.Get<IHttpConnectionFeature>();
             var lifetime = features.Get<IHttpRequestLifetimeFeature>();
             var identifier = features.Get<IHttpRequestIdentifierFeature>();
             var authentication = features.Get<IHttpAuthenticationFeature>();
@@ -53,6 +54,12 @@ namespace KestrelPureOwin
 
             environment["owin.CallCancelled"] = lifetime.RequestAborted;
             environment["owin.Version"] = "1.1";
+
+            environment["server.RemoteIpAddress"] = connection?.RemoteIpAddress.ToString();
+            environment["server.RemotePort"] = connection?.RemotePort.ToString();
+            environment["server.LocalIpAddress"] = connection?.LocalIpAddress.ToString();
+            environment["server.LocalPort"] = connection?.LocalPort.ToString();
+            environment["server.User"] = authentication?.User;
 
             return environment;
         }
