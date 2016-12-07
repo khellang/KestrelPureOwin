@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -6,14 +6,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace KestrelPureOwin
 {
-    public class OwinHeaderDictionary : IDictionary<string, string[]>
+    public class ReverseOwinHeaderDictionary : IHeaderDictionary
     {
-        public OwinHeaderDictionary(IHeaderDictionary inner)
+        public ReverseOwinHeaderDictionary(IDictionary<string, string[]> inner)
         {
             Inner = inner;
         }
 
-        private IHeaderDictionary Inner { get; }
+        private IDictionary<string, string[]> Inner { get; }
 
         public int Count => Inner.Count;
 
@@ -21,15 +21,25 @@ namespace KestrelPureOwin
 
         public ICollection<string> Keys => Inner.Keys;
 
-        public ICollection<string[]> Values => Inner.Values.Select(Convert).ToList();
+        public ICollection<StringValues> Values => Inner.Values.Select(Convert).ToArray();
 
-        public string[] this[string key]
+        StringValues IHeaderDictionary.this[string key]
         {
-            get { return Inner[key].ToArray(); }
+            get
+            {
+                string[] values;
+                return Inner.TryGetValue(key, out values) ? values : null;
+            }
             set { Inner[key] = value; }
         }
 
-        public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+        StringValues IDictionary<string, StringValues>.this[string key]
+        {
+            get { return Inner[key]; }
+            set { Inner[key] = value; }
+        }
+
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
         {
             return Inner.Select(Convert).GetEnumerator();
         }
@@ -39,7 +49,7 @@ namespace KestrelPureOwin
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<string, string[]> item)
+        public void Add(KeyValuePair<string, StringValues> item)
         {
             Inner.Add(Convert(item));
         }
@@ -49,12 +59,12 @@ namespace KestrelPureOwin
             Inner.Clear();
         }
 
-        public bool Contains(KeyValuePair<string, string[]> item)
+        public bool Contains(KeyValuePair<string, StringValues> item)
         {
             return Inner.Contains(Convert(item));
         }
 
-        public void CopyTo(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
             foreach (var pair in Inner)
             {
@@ -62,14 +72,9 @@ namespace KestrelPureOwin
             }
         }
 
-        public bool Remove(KeyValuePair<string, string[]> item)
+        public bool Remove(KeyValuePair<string, StringValues> item)
         {
             return Inner.Remove(Convert(item));
-        }
-
-        public void Add(string key, string[] value)
-        {
-            Inner.Add(key, Convert(value));
         }
 
         public bool ContainsKey(string key)
@@ -77,21 +82,26 @@ namespace KestrelPureOwin
             return Inner.ContainsKey(key);
         }
 
+        public void Add(string key, StringValues value)
+        {
+            Inner.Add(key, Convert(value));
+        }
+
         public bool Remove(string key)
         {
             return Inner.Remove(key);
         }
 
-        public bool TryGetValue(string key, out string[] value)
+        public bool TryGetValue(string key, out StringValues value)
         {
-            StringValues values;
+            string[] values;
             if (Inner.TryGetValue(key, out values))
             {
                 value = Convert(values);
                 return true;
             }
 
-            value = null;
+            value = StringValues.Empty;
             return false;
         }
 

@@ -69,14 +69,16 @@ namespace KestrelPureOwin
 
         public async Task ProcessRequestAsync(Dictionary<string, object> environment)
         {
-            await Application.Invoke(environment);
+            await Application.Invoke(environment).ConfigureAwait(false);
 
             var features = environment.Get<IFeatureCollection>(Server.Features);
 
             var response = features.Get<IHttpResponseFeature>();
 
+            var owinHeaders = environment.Get<IDictionary<string, string[]>>(Owin.Response.Headers);
+
             response.Body = environment.Get<Stream>(Owin.Response.Body);
-            // TODO: Headers...
+            response.Headers = new ReverseOwinHeaderDictionary(owinHeaders);
             response.StatusCode = environment.Get<int>(Owin.Response.StatusCode);
             response.ReasonPhrase = environment.Get<string>(Owin.Response.ReasonPhrase);
         }
