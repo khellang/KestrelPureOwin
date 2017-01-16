@@ -56,12 +56,13 @@ namespace KestrelPureOwin
             environment.Set(Owin.Response.ReasonPhrase, response.ReasonPhrase);
             environment.Set(Owin.Response.Protocol, request.Protocol);
 
-            environment.Set(Owin.CallCancelled, lifetime.RequestAborted);
+            environment.Set(Owin.CallCancelled, lifetime?.RequestAborted);
             environment.Set(Owin.OwinVersion, "1.1");
 
             environment.Set(Server.RemoteIpAddress, connection?.RemoteIpAddress.ToString());
             environment.Set(Server.RemotePort, connection?.RemotePort.ToString());
             environment.Set(Server.LocalIpAddress, connection?.LocalIpAddress.ToString());
+            environment.Set(Server.OnSendingHeaders, CreateCallback(response.OnStarting));
             environment.Set(Server.LocalPort, connection?.LocalPort.ToString());
             environment.Set(Server.User, authentication?.User);
             environment.Set(Server.Features, features);
@@ -88,6 +89,20 @@ namespace KestrelPureOwin
         public void DisposeContext(Dictionary<string, object> environment, Exception exception)
         {
             EnvironmentPool.Return(environment);
+        }
+
+        private static Action<Action<object>, object> CreateCallback(Action<Func<object, Task>, object> onStarting)
+        {
+            return (callback, state) => onStarting(WrapCallback(callback), state);
+        }
+
+        private static Func<object, Task> WrapCallback(Action<object> callback)
+        {
+            return state =>
+            {
+                callback(state);
+                return Tasks.Completed;
+            };
         }
     }
 }

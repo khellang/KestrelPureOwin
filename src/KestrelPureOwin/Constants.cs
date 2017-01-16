@@ -41,6 +41,7 @@
             public const string Features = "server.Features";
             public const string Capabilities = "server.Capabilities";
             public const string Name = "server.Name";
+            public const string OnSendingHeaders = "server.OnSendingHeaders";
         }
 
         public static class Host
