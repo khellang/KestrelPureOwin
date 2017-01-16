@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
@@ -56,13 +57,13 @@ namespace KestrelPureOwin
             environment.Set(Owin.Response.ReasonPhrase, response.ReasonPhrase);
             environment.Set(Owin.Response.Protocol, request.Protocol);
 
-            environment.Set(Owin.CallCancelled, lifetime?.RequestAborted);
+            environment.Set(Owin.CallCancelled, lifetime?.RequestAborted ?? CancellationToken.None);
             environment.Set(Owin.OwinVersion, "1.1");
 
+            environment.Set(Server.OnSendingHeaders, CreateCallback(response.OnStarting));
             environment.Set(Server.RemoteIpAddress, connection?.RemoteIpAddress.ToString());
             environment.Set(Server.RemotePort, connection?.RemotePort.ToString());
             environment.Set(Server.LocalIpAddress, connection?.LocalIpAddress.ToString());
-            environment.Set(Server.OnSendingHeaders, CreateCallback(response.OnStarting));
             environment.Set(Server.LocalPort, connection?.LocalPort.ToString());
             environment.Set(Server.User, authentication?.User);
             environment.Set(Server.Features, features);
