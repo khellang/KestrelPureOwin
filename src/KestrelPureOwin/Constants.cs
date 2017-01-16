@@ -1,6 +1,6 @@
 ﻿namespace KestrelPureOwin
 {
-    public static class Constants
+    internal static class Constants
     {
         public static class Owin
         {
@@ -39,6 +39,13 @@
             public const string LocalPort = "server.LocalPort";
             public const string User = "server.User";
             public const string Features = "server.Features";
+            public const string Capabilities = "server.Capabilities";
+            public const string Name = "server.Name";
+        }
+
+        public static class Host
+        {
+            public const string Addresses = "host.Addresses";
         }
     }
 }

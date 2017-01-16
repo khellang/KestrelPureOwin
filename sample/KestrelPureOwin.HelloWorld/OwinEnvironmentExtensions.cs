@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace KestrelPureOwin
+namespace KestrelPureOwin.HelloWorld
 {
     internal static class OwinEnvironmentExtensions
     {
@@ -18,6 +18,11 @@ namespace KestrelPureOwin
         public static void Set<T>(this IDictionary<string, object> environment, string key, T value)
         {
             environment[key] = value;
+        }
+
+        public static void Set(this IDictionary<string, string[]> headers, string key, string[] values)
+        {
+            headers[key] = values;
         }
     }
 }

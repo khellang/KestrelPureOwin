@@ -6,7 +6,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace KestrelPureOwin
 {
-    public class OwinHeaderDictionary : IDictionary<string, string[]>
+    internal class OwinHeaderDictionary : IDictionary<string, string[]>
     {
         public OwinHeaderDictionary(IHeaderDictionary inner)
         {

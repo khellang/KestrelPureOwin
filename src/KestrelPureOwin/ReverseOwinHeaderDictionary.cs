@@ -6,7 +6,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace KestrelPureOwin
 {
-    public class ReverseOwinHeaderDictionary : IHeaderDictionary
+    internal class ReverseOwinHeaderDictionary : IHeaderDictionary
     {
         public ReverseOwinHeaderDictionary(IDictionary<string, string[]> inner)
         {

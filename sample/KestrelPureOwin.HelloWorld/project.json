@@ -1,0 +1,21 @@
+﻿{
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "KestrelPureOwin": { "target": "project" } 
+  },
+
+  "frameworks": {
+    "net451": {},
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.1.0"
+        }
+      }
+    }
+  }
+}

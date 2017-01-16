@@ -10,7 +10,9 @@ using static KestrelPureOwin.Constants;
 
 namespace KestrelPureOwin
 {
-    public class OwinApplication : IHttpApplication<Dictionary<string, object>>
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
+    internal class OwinApplication : IHttpApplication<Dictionary<string, object>>
     {
         private static readonly ObjectPoolProvider PoolProvider = new DefaultObjectPoolProvider();
 
