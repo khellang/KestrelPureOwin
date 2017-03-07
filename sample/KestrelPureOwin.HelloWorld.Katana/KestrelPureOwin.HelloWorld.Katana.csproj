@@ -65,7 +65,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\KestrelPureOwin\KestrelPureOwin.xproj">
+    <ProjectReference Include="..\..\src\KestrelPureOwin\KestrelPureOwin.csproj">
       <Project>{2fe097c1-ac56-4046-ba60-c76b28e8fb83}</Project>
       <Name>KestrelPureOwin</Name>
     </ProjectReference>

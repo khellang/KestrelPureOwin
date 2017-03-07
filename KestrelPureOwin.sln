@@ -1,19 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelPureOwin", "src\KestrelPureOwin\KestrelPureOwin.xproj", "{2FE097C1-AC56-4046-BA60-C76B28E8FB83}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F073A952-0D69-40B8-86AF-6ACCCCF96390}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47D17886-561C-4FAC-8B5A-AA4751416BE2}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{39940282-C2C3-4D3B-8BD8-C30173D06937}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelPureOwin.HelloWorld", "sample\KestrelPureOwin.HelloWorld\KestrelPureOwin.HelloWorld.xproj", "{DEFA92C3-2BD0-404C-BFDE-36B604330DB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KestrelPureOwin", "src\KestrelPureOwin\KestrelPureOwin.csproj", "{2FE097C1-AC56-4046-BA60-C76B28E8FB83}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KestrelPureOwin.HelloWorld", "sample\KestrelPureOwin.HelloWorld\KestrelPureOwin.HelloWorld.csproj", "{DEFA92C3-2BD0-404C-BFDE-36B604330DB5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KestrelPureOwin.HelloWorld.Katana", "sample\KestrelPureOwin.HelloWorld.Katana\KestrelPureOwin.HelloWorld.Katana.csproj", "{8DF915E1-2FFE-4DE2-A931-115DDFE521EB}"
 EndProject
