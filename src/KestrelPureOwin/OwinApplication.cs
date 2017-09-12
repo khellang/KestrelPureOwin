@@ -68,38 +68,36 @@ namespace KestrelPureOwin
             environment.Set(Server.User, authentication?.User);
             environment.Set(Server.Features, features);
 
-            response.OnStarting(SetStatus, (response, environment));
+            response.OnStarting(CopyEnvironment, environment);
 
             return environment;
-        }
-
-        private static Task SetStatus(object state)
-        {
-            var (response, environment) = ((IHttpResponseFeature, Dictionary<string, object>)) state;
-
-            response.StatusCode = environment.Get<int>(Owin.Response.StatusCode);
-            response.ReasonPhrase = environment.Get<string>(Owin.Response.ReasonPhrase);
-
-            return Tasks.Completed;
         }
 
         public async Task ProcessRequestAsync(Dictionary<string, object> environment)
         {
             await Application.Invoke(environment).ConfigureAwait(false);
-
-            var features = environment.Get<IFeatureCollection>(Server.Features);
-
-            var response = features.Get<IHttpResponseFeature>();
-
-            var owinHeaders = environment.Get<IDictionary<string, string[]>>(Owin.Response.Headers);
-
-            response.Body = environment.Get<Stream>(Owin.Response.Body);
-            response.Headers = new ReverseOwinHeaderDictionary(owinHeaders);
         }
 
         public void DisposeContext(Dictionary<string, object> environment, Exception exception)
         {
             EnvironmentPool.Return(environment);
+        }
+
+        private static Task CopyEnvironment(object state)
+        {
+            if (state is IDictionary<string, object> environment)
+            {
+                var features = environment.Get<IFeatureCollection>(Server.Features);
+
+                var response = features.Get<IHttpResponseFeature>();
+
+                response.Headers = new ReverseOwinHeaderDictionary(environment.GetResponseHeaders());
+                response.Body = environment.Get<Stream>(Owin.Response.Body);
+                response.StatusCode = environment.Get<int>(Owin.Response.StatusCode);
+                response.ReasonPhrase = environment.Get<string>(Owin.Response.ReasonPhrase);
+            }
+
+            return Tasks.Completed;
         }
 
         private static Action<Action<object>, object> CreateCallback(Action<Func<object, Task>, object> onStarting)

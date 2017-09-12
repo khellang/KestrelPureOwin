@@ -1,9 +1,15 @@
 using System.Collections.Generic;
+using static KestrelPureOwin.Constants;
 
 namespace KestrelPureOwin
 {
     internal static class OwinEnvironmentExtensions
     {
+        public static IDictionary<string, string[]> GetResponseHeaders(this IDictionary<string, object> environment)
+        {
+            return environment.Get<IDictionary<string, string[]>>(Owin.Response.Headers);
+        }
+
         public static T Get<T>(this IDictionary<string, object> environment, string key)
         {
             object value;

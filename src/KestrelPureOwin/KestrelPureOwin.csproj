@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.1.0" />
   </ItemGroup>
