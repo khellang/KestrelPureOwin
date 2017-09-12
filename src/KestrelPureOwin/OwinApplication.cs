@@ -68,7 +68,19 @@ namespace KestrelPureOwin
             environment.Set(Server.User, authentication?.User);
             environment.Set(Server.Features, features);
 
+            response.OnStarting(SetStatus, (response, environment));
+
             return environment;
+        }
+
+        private static Task SetStatus(object state)
+        {
+            var (response, environment) = ((IHttpResponseFeature, Dictionary<string, object>)) state;
+
+            response.StatusCode = environment.Get<int>(Owin.Response.StatusCode);
+            response.ReasonPhrase = environment.Get<string>(Owin.Response.ReasonPhrase);
+
+            return Tasks.Completed;
         }
 
         public async Task ProcessRequestAsync(Dictionary<string, object> environment)
@@ -83,8 +95,6 @@ namespace KestrelPureOwin
 
             response.Body = environment.Get<Stream>(Owin.Response.Body);
             response.Headers = new ReverseOwinHeaderDictionary(owinHeaders);
-            response.StatusCode = environment.Get<int>(Owin.Response.StatusCode);
-            response.ReasonPhrase = environment.Get<string>(Owin.Response.ReasonPhrase);
         }
 
         public void DisposeContext(Dictionary<string, object> environment, Exception exception)
